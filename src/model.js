@@ -1,5 +1,5 @@
 import {createHash} from 'node:crypto';
-export const fields = {'Company':'company','Job title':'title','Location':'location','Job link':'url','Date found':'found','Date applied':'applied','Visa compatibility':'visa','CPT/OPT/Sponsorship notes':'sponsorship','Resume version':'resume','Cover letter':'cover','Status':'status','Follow-up date':'followup','Notes':'notes','Job ID':'id'};
+export const fields = {'Company':'company','Job title':'title','Location':'location','Job link':'url','Date found':'found','Date applied':'applied','Visa compatibility':'visa','CPT/OPT/Sponsorship notes':'sponsorship','Resume version':'resume','Cover letter':'cover','Status':'status','Priority':'priority','Follow-up date':'followup','Notes':'notes','Job ID':'id'};
 export function parseRows(values) {
   if (!Array.isArray(values) || !values.length) throw new Error('The Applications tab has no header row.');
   const headers = values[0].map(x => String(x).trim());
