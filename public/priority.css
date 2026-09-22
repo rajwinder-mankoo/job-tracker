@@ -43,3 +43,22 @@
   gap: 10px;
   margin-top: 18px;
 }
+
+.document-links {
+  display: grid;
+  gap: 5px;
+  min-width: 82px;
+}
+
+.document-link {
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.document-link:hover {
+  text-decoration: underline;
+}
+
+.no-documents {
+  color: #9aa5a0;
+}
