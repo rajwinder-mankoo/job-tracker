@@ -24,7 +24,7 @@ const sync = createSync(async () => {
     throw new Error('Google Sheets sync failed. Check credentials and network access; your last successful data is retained.');
   }
 },interval);
-const assets = {'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/style.css':['style.css','text/css']};
+const assets = {'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/style.css':['style.css','text/css'],'/priority.css':['priority.css','text/css']};
 const server = http.createServer(async (req,res) => {
   const headers = {'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"};
   const send = (code,body,type='application/json') => {res.writeHead(code,{...headers,'Content-Type':`${type}; charset=utf-8`});res.end(type === 'application/json' ? JSON.stringify(body) : body);};

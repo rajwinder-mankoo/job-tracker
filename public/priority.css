@@ -1,0 +1,33 @@
+.priority {
+  display: inline-block;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.priority-high {
+  background: #fbe8e5;
+  color: #983e32;
+}
+
+.priority-medium {
+  background: #fff1d6;
+  color: #855f18;
+}
+
+.priority-low {
+  background: #e9f0f8;
+  color: #456783;
+}
+
+.priority-none {
+  background: #f0f2f1;
+  color: #78827d;
+  font-weight: 500;
+}
+
+.card-priority {
+  align-self: flex-start;
+}
