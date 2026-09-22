@@ -36,3 +36,10 @@
 .card-priority {
   align-self: flex-start;
 }
+
+.document-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
