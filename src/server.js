@@ -15,7 +15,16 @@ const sync = createSync(async () => {
   try {
     const client = await auth.getClient();
     const response = await client.request({url:`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(sheetId)}/values/${encodeURIComponent(range)}`,timeout:15000,retry:false});
-    return parseRows(response.data.values);
+    let linkRows = [];
+    try {
+      const metadataUrl = new URL(`https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(sheetId)}`);
+      metadataUrl.searchParams.set('ranges',range);
+      metadataUrl.searchParams.set('includeGridData','true');
+      metadataUrl.searchParams.set('fields','sheets(data(rowData(values(hyperlink,textFormatRuns(format(link(uri))),chipRuns(chip(richLinkProperties(uri)))))))');
+      const metadata = await client.request({url:metadataUrl.href,timeout:15000,retry:false});
+      linkRows = metadata.data.sheets?.[0]?.data?.[0]?.rowData?.map(row=>row.values||[])||[];
+    } catch {}
+    return parseRows(response.data.values,linkRows);
   } catch (err) {
     if (err.response?.status === 403) throw new Error('Google denied access. Enable the Sheets API and share the sheet with the service account as Viewer.');
     if (err.response?.status === 404) throw new Error('Sheet not found. Check SHEET_ID and service account access.');
