@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parseRows,createSync} from '../src/model.js';
+test('maps reordered columns and preserves multiline notes',()=>{const jobs=parseRows([['Status','Notes','Job title','Company'],['Applied','First\nSecond','Analyst','Company']]);assert.equal(jobs[0].company,'Company');assert.equal(jobs[0].notes,'First\nSecond');assert.equal(jobs[0].applied,'');});
+test('rejects changed schemas instead of replacing good data',()=>assert.throws(()=>parseRows([['Company'],['A']]),/Missing column/));
+test('ignores blank rows, permits sparse optional cells and blocks unsafe links',()=>{const jobs=parseRows([['Company','Job title','Status','Job link'],[],['A','B','','javascript:alert(1)']]);assert.equal(jobs.length,1);assert.equal(jobs[0].url,'');assert.equal(jobs[0].status,'Found');});
+test('identity survives row sorting and status updates; duplicates remain distinct',()=>{const headers=['Company','Job title','Status'];const a=parseRows([headers,['A','Role','Found'],['B','Role','Found']]);const b=parseRows([headers,['B','Role','Applied'],['A','Role','Found']]);assert.equal(a[0].id,b[1].id);assert.equal(a[1].id,b[0].id);const c=parseRows([headers,['A','Role','Found'],['A','Role','Found']]);assert.notEqual(c[0].id,c[1].id);});
+test('failed sync keeps last successful data and timestamp',async()=>{let fail=false;const sync=createSync(async()=>{if(fail)throw new Error('Offline');return [{id:'1'}];},0);const first=await sync.refresh();fail=true;const next=await sync.refresh();assert.deepEqual(next.jobs,first.jobs);assert.equal(next.lastSynced,first.lastSynced);assert.equal(next.error,'Offline');});
+test('concurrent refreshes share one request',async()=>{let calls=0;const sync=createSync(async()=>{calls++;await new Promise(r=>setTimeout(r,10));return [];},0);await Promise.all([sync.refresh(),sync.refresh()]);assert.equal(calls,1);});
+test('successful empty sheet clears old jobs',async()=>{let jobs=[{id:'1'}];const sync=createSync(async()=>jobs,0);await sync.refresh();jobs=[];assert.deepEqual((await sync.refresh()).jobs,[]);});
