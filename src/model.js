@@ -1,5 +1,8 @@
 import {createHash} from 'node:crypto';
-export const fields = {'Company':'company','Job title':'title','Location':'location','Job link':'url','Date found':'found','Date applied':'applied','Visa compatibility':'visa','CPT/OPT/Sponsorship notes':'sponsorship','Resume version':'resume','Cover letter':'cover','Status':'status','Priority':'priority','Follow-up date':'followup','Notes':'notes','Job ID':'id'};
+export const fields = {'Company':'company','Job title':'title','Location':'location','Job link':'url','Date found':'found','Date applied':'applied','Visa compatibility':'visa','CPT/OPT/Sponsorship notes':'sponsorship','Resume version':'resume','Resume link':'resumeUrl','Cover letter':'cover','Cover letter link':'coverUrl','Status':'status','Priority':'priority','Follow-up date':'followup','Notes':'notes','Job ID':'id'};
+function safeUrl(value) {
+  try {const url = new URL(value);return ['https:','http:'].includes(url.protocol)?url.href:'';} catch {return '';}
+}
 export function parseRows(values) {
   if (!Array.isArray(values) || !values.length) throw new Error('The Applications tab has no header row.');
   const headers = values[0].map(x => String(x).trim());
@@ -11,7 +14,9 @@ export function parseRows(values) {
     const identity = job.id || createHash('sha256').update([job.company,job.title,job.url].join('\0')).digest('hex').slice(0,20);
     const count = seen.get(identity) || 0; seen.set(identity,count + 1);
     job.id = `${identity}:${count}`;
-    try { const url = new URL(job.url); if (!['https:','http:'].includes(url.protocol)) job.url = ''; } catch { job.url = ''; }
+    job.url = safeUrl(job.url);
+    job.resumeUrl = safeUrl(job.resumeUrl)||safeUrl(job.resume);
+    job.coverUrl = safeUrl(job.coverUrl)||safeUrl(job.cover);
     return job;
   });
 }
