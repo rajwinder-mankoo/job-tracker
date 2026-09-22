@@ -7,19 +7,24 @@
   white-space: nowrap;
 }
 
-.priority-high {
+.priority-1 {
   background: #fbe8e5;
   color: #983e32;
 }
 
-.priority-medium {
+.priority-2 {
   background: #fff1d6;
   color: #855f18;
 }
 
-.priority-low {
+.priority-3 {
   background: #e9f0f8;
   color: #456783;
+}
+
+.priority-4 {
+  background: #edf0ef;
+  color: #63716a;
 }
 
 .priority-none {

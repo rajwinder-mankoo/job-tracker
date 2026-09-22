@@ -3,8 +3,8 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;',
 let data = {jobs:[]}, view = 'list', page = 'toapply', selectedId = null, busy = false;
 const statusClass = status => /interview|offer/i.test(status)?'green':/applied/i.test(status)?'blue':/reject|withdraw/i.test(status)?'muted':'amber';
 const badge = status => `<span class="badge ${statusClass(status)}">${escape(status)}</span>`;
-const priorityRank = priority => ({high:0,medium:1,low:2})[String(priority||'').trim().toLowerCase()] ?? 3;
-const priorityClass = priority => ['high','medium','low'].includes(String(priority||'').trim().toLowerCase())?String(priority).trim().toLowerCase():'none';
+const priorityRank = priority => {const value=Number(String(priority||'').trim());return Number.isInteger(value)&&value>=1&&value<=4?value-1:4;};
+const priorityClass = priority => {const value=String(priority||'').trim();return ['1','2','3','4'].includes(value)?value:'none';};
 const priorityBadge = priority => `<span class="priority priority-${priorityClass(priority)}">${escape(priority||'Not set')}</span>`;
 function dateValue(value) {if(!value)return null;const date=new Date(/^\d{4}-\d{2}-\d{2}$/.test(value)?`${value}T12:00:00`:value);return Number.isNaN(date.getTime())?null:date;}
 const dateText = value => {const date=dateValue(value);return date?date.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):value||'Not recorded';};

@@ -4,7 +4,7 @@ A private, mobile-friendly application dashboard that reads the Applications tab
 
 ## Included
 
-- Separate views for jobs to apply to and submitted applications. Search across every field; filter by status and visa compatibility; sort by priority, discovery date, company, or follow-up date. Priority sorting puts High before Medium, Low, and blank values.
+- Separate views for jobs to apply to and submitted applications. Search across every field; filter by status and visa compatibility; sort by priority, discovery date, company, or follow-up date. Priority sorting puts 1 before 2, 3, 4, and blank values.
 - List and board views, full research notes, resume/cover-letter references, safe job links, and follow-ups due today or earlier.
 - Server-side Google Sheets refresh every 60 seconds. Browser refreshes every minute while visible and when returning to the tab. Manual refresh is limited to once per 5 seconds.
 - Last successful results remain in memory during sync failures. They do not survive a server restart. No personal application data is committed to this repository.
@@ -31,7 +31,7 @@ Open http://127.0.0.1:3000. On Windows, use `Copy-Item .env.example .env` instea
 5. Copy `.env.example` to `.env`. The current sheet ID and `Applications!A:ZZ` range are already provided. Set `DEMO_MODE=false`.
 6. Start/restart the app. A successful sync shows a timestamp and your jobs.
 
-Required headers: `Company`, `Job title`, `Status`. Optional headers: `Priority`, `Location`, `Job link`, `Date found`, `Date applied`, `Visa compatibility`, `CPT/OPT/Sponsorship notes`, `Resume version`, `Cover letter`, `Follow-up date`, `Notes`, `Job ID`. Column order can change. Use `High`, `Medium`, or `Low` for priority and YYYY-MM-DD dates for reliable sorting and follow-up handling. A job appears in Applied when its status is Applied, Interview, Offer, or Accepted, or when `Date applied` contains a value. Set the server/browser time zones appropriately for your location.
+Required headers: `Company`, `Job title`, `Status`. Optional headers: `Priority`, `Location`, `Job link`, `Date found`, `Date applied`, `Visa compatibility`, `CPT/OPT/Sponsorship notes`, `Resume version`, `Cover letter`, `Follow-up date`, `Notes`, `Job ID`. Column order can change. Use `1`, `2`, `3`, or `4` for priority, where 1 is highest, and YYYY-MM-DD dates for reliable sorting and follow-up handling. A job appears in Applied when its status is Applied, Interview, Offer, or Accepted, or when `Date applied` contains a value. Set the server/browser time zones appropriately for your location.
 
 Optional permanent `Job ID` values improve identity tracking if Muse edits a title or job link. Without them, identity uses company/title/link; sorting and status updates work normally. Duplicate identities get per-response suffixes. IDs do not affect importing all rows. The app does not add or modify sheet columns. Document filenames are references, not uploaded attachments.
 
