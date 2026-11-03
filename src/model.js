@@ -24,13 +24,16 @@ export function parseRows(values, linkRows = []) {
     return job;
   });
 }
+// Timer ticks and request-triggered syncs never line up exactly, so allow 1s of slack;
+// otherwise a tick landing at 59,999ms is skipped and the effective interval doubles.
+const SLACK_MS = 1000;
 export function createSync(load, intervalMs = 60000) {
-  let state = {jobs:[],lastSynced:null,error:null}, pending, lastAttempt = 0;
+  let state = {jobs:[],lastSynced:null,error:null}, pending, lastAttempt = -Infinity;
   return {
     snapshot: () => ({...state}),
     async refresh(force = false) {
       if (pending) return pending;
-      if (Date.now() - lastAttempt < (force ? 5000 : intervalMs)) return state;
+      if (Date.now() - lastAttempt < (force ? 5000 : Math.max(0,intervalMs - SLACK_MS))) return state;
       lastAttempt = Date.now();
       pending = (async () => {try {const jobs = await load(); state = {jobs,lastSynced:new Date().toISOString(),error:null};} catch (err) {state = {...state,error:err.message};} return state;})().finally(() => {pending = null;});
       return pending;

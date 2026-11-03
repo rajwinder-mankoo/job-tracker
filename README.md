@@ -28,16 +28,16 @@ Open http://127.0.0.1:3000. On Windows, use `Copy-Item .env.example .env` instea
 2. Create a service account. No project-wide IAM roles or domain-wide delegation are needed.
 3. Create a JSON key for it. Save it locally as `secrets/google-service-account.json`. Never paste it into chat or commit it.
 4. Share only the job-tracker spreadsheet with the service account's `client_email`, using **Viewer** permission. Keep the sheet private otherwise.
-5. Copy `.env.example` to `.env`. The current sheet ID and `Applications!A:ZZ` range are already provided. Set `DEMO_MODE=false`.
+5. Copy `.env.example` to `.env`. Set `SHEET_ID` to the long ID in your sheet's URL (`docs.google.com/spreadsheets/d/<SHEET_ID>/edit`). Keep the `Applications!A:ZZ` range unless your tab is named differently; the range must start at row 1 so the header row is included. Set `DEMO_MODE=false`.
 6. Start/restart the app. A successful sync shows a timestamp and your jobs.
 
-Required headers: `Company`, `Job title`, `Status`. Optional headers: `Priority`, `Location`, `Job link`, `Date found`, `Date applied`, `Visa compatibility`, `CPT/OPT/Sponsorship notes`, `Resume version`, `Resume link`, `Cover letter`, `Cover letter link`, `Follow-up date`, `Notes`, `Job ID`. Column order can change. Use `1`, `2`, `3`, or `4` for priority, where 1 is highest, and YYYY-MM-DD dates for reliable sorting and follow-up handling. Resume and cover-letter links can be regular linked text, Google Drive file chips, or full `https://` URLs in the existing document cells or dedicated link columns. A job appears in Applied when its status is Applied, Interview, Offer, or Accepted, or when `Date applied` contains a value. Set the server/browser time zones appropriately for your location.
+Required headers: `Company`, `Job title`, `Status`. Optional headers: `Priority`, `Location`, `Job link`, `Date found`, `Date applied`, `Visa compatibility`, `CPT/OPT/Sponsorship notes`, `Resume version`, `Resume link`, `Cover letter`, `Cover letter link`, `Follow-up date`, `Notes`, `Job ID`. Column order can change. Use `1`, `2`, `3`, or `4` for priority, where 1 is highest, and YYYY-MM-DD dates for reliable sorting and follow-up handling. Resume and cover-letter links can be regular linked text, Google Drive file chips, or full `https://` URLs in the existing document cells or dedicated link columns. A job appears in Applied when its status is exactly Applied, Interview, Offer, Accepted, Rejected, or Withdrawn (case-insensitive), or when `Date applied` contains a value. Every other status stays in To apply. Set the server/browser time zones appropriately for your location.
 
 Optional permanent `Job ID` values improve identity tracking if Muse edits a title or job link. Without them, identity uses company/title/link; sorting and status updates work normally. Duplicate identities get per-response suffixes. IDs do not affect importing all rows. The app does not add or modify sheet columns. Document filenames are references, while document links open the files in a new tab.
 
 ## Debian VM deployment
 
-Keep the GitHub repository private. Authenticate Git on the VM with your own GitHub login or a repository-scoped SSH deploy key with read access, then clone the repository. Install Docker Engine with its Compose plugin from Docker's official Debian instructions.
+Authenticate Git on the VM with your own GitHub login or a repository-scoped SSH deploy key with read access, then clone the repository. Install Docker Engine with its Compose plugin from Docker's official Debian instructions.
 
 ```sh
 git clone git@github.com:rajwinder-mankoo/job-tracker.git
@@ -73,7 +73,7 @@ docker compose up -d --build
 pnpm test
 ```
 
-Tests cover reordered headers, blank rows, unsafe URLs, stable identity, duplicate rows, concurrent requests, empty results, and preservation of data on failure. `/health` checks the app process, not Google authorization. Real Google access needs the service account setup above. Back up the sheet, `.env`, and credential file securely; the app has no separate job database.
+Tests cover status classification, refresh timing, reordered headers, blank rows, unsafe URLs, stable identity, duplicate rows, concurrent requests, empty results, and preservation of data on failure. `/health` checks the app process, not Google authorization. Sync failures are logged with timestamps to stderr (`docker compose logs job-tracker`); sheet contents are never logged. Real Google access needs the service account setup above. Back up the sheet, `.env`, and credential file securely; the app has no separate job database.
 
 ## References
 

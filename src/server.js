@@ -9,6 +9,7 @@ const demo = process.env.DEMO_MODE === 'true';
 const auth = new GoogleAuth({scopes:['https://www.googleapis.com/auth/spreadsheets.readonly']});
 const range = process.env.SHEET_RANGE || 'Applications!A:ZZ';
 const interval = 60000;
+const log = (message,err) => console.error(`${new Date().toISOString()} ${message}${err ? `: ${err.response?.status ? `HTTP ${err.response.status} ` : ''}${err.message}` : ''}`);
 const sync = createSync(async () => {
   if (demo) return JSON.parse(await readFile(new URL('../demo.json',import.meta.url),'utf8'));
   if (!configured) throw new Error('Connect Google Sheets to load your applications. Follow the setup steps in README.md.');
@@ -23,9 +24,10 @@ const sync = createSync(async () => {
       metadataUrl.searchParams.set('fields','sheets(data(rowData(values(hyperlink,textFormatRuns(format(link(uri))),chipRuns(chip(richLinkProperties(uri)))))))');
       const metadata = await client.request({url:metadataUrl.href,timeout:15000,retry:false});
       linkRows = metadata.data.sheets?.[0]?.data?.[0]?.rowData?.map(row=>row.values||[])||[];
-    } catch {}
+    } catch (err) {log('Link metadata fetch failed; document links may be missing',err);}
     return parseRows(response.data.values,linkRows);
   } catch (err) {
+    log('Google Sheets sync failed',err);
     if (err.response?.status === 403) throw new Error('Google denied access. Enable the Sheets API and share the sheet with the service account as Viewer.');
     if (err.response?.status === 404) throw new Error('Sheet not found. Check SHEET_ID and service account access.');
     if (err.response?.status === 400) throw new Error('Google could not read the range. Check SHEET_RANGE and the Applications tab name.');
@@ -33,7 +35,7 @@ const sync = createSync(async () => {
     throw new Error('Google Sheets sync failed. Check credentials and network access; your last successful data is retained.');
   }
 },interval);
-const assets = {'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/style.css':['style.css','text/css'],'/priority.css':['priority.css','text/css']};
+const assets = {'/':['index.html','text/html'],'/app.js':['app.js','text/javascript'],'/style.css':['style.css','text/css'],'/priority.css':['priority.css','text/css'],'/status.js':['status.js','text/javascript']};
 const server = http.createServer(async (req,res) => {
   const headers = {'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"};
   const send = (code,body,type='application/json') => {res.writeHead(code,{...headers,'Content-Type':`${type}; charset=utf-8`});res.end(type === 'application/json' ? JSON.stringify(body) : body);};
@@ -48,7 +50,7 @@ const server = http.createServer(async (req,res) => {
     if (!assets[path]) return send(404,{error:'Not found'});
     const [file,type] = assets[path];
     send(200,await readFile(new URL(`../public/${file}`,import.meta.url),'utf8'),type);
-  } catch {send(500,{error:'Unable to serve the request.'});}
+  } catch (err) {log(`Request failed for ${req.method} ${req.url}`,err);send(500,{error:'Unable to serve the request.'});}
 });
 server.listen(Number(process.env.PORT || 3000),process.env.HOST || '127.0.0.1',() => console.log(`Job Tracker running on port ${process.env.PORT || 3000} (${demo?'demo':configured?'Google Sheets':'setup'})`));
 const timer = setInterval(() => {if (configured || demo) void sync.refresh();},interval); timer.unref();
